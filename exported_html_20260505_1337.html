@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Tourl + Mari Menimpa(Fixed)</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+
+    body {
+
+      font-family: 'Inter', system-ui, sans-serif;
+
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+
+    }
+
+    .glass {
+
+      background: rgba(255,255,255,0.06);
+
+      backdrop-filter: blur(16px);
+
+      border: 1px solid rgba(255,255,255,0.1);
+
+    }
+
+    .drop-zone {
+
+      transition: all 0.3s ease;
+
+    }
+
+    .drop-zone.dragover {
+
+      border-color: #10b981;
+
+      background: rgba(16, 185, 129, 0.1);
+
+    }
+
+    .tab-active {
+
+      border-bottom: 4px solid #10b981;
+
+      color: #10b981;
+
+      font-weight: 600;
+
+    }
+
+  </style>
+
+</head>
+
+<body class="text-white min-h-screen">
+
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <h1 class="text-4xl font-bold text-center mb-2">Tourl + Timpa</h1>
+
+    <p class="text-center text-emerald-400">Upload foto • Dapatkan link • Edit dengan AI</p>
+
+    <!-- Tab -->
+
+    <div class="flex border-b border-zinc-700 mt-10">
+
+      <button onclick="switchTab(1)" id="tab1" class="tab-active px-10 py-4 text-lg flex-1">📤 Tourl (Dapatkan Link)</button>
+
+      <button onclick="switchTab(2)" id="tab2" class="px-10 py-4 text-lg flex-1">🔮 Nimpa(Edit Foto)</button>
+
+    </div>
+
+    <!-- HALAMAN 1: TOURl -->
+
+    <div id="page1" class="mt-8">
+
+      <div class="glass rounded-3xl p-10">
+
+        <h2 class="text-2xl font-semibold mb-6">Upload Foto</h2>
+
+        
+
+        <div id="dropZone1" class="drop-zone border-2 border-dashed border-zinc-600 hover:border-emerald-500 rounded-3xl p-16 text-center cursor-pointer mb-8">
+
+          <input type="file" id="fileInput1" accept="image/*" class="hidden">
+
+          <i class="fas fa-cloud-upload-alt text-6xl text-zinc-400 mb-6"></i>
+
+          <p class="text-xl font-medium">Klik atau tarik foto ke sini</p>
+
+          <p class="text-zinc-500 text-sm">PNG, JPG, JPEG</p>
+
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+
+          <button onclick="uploadToHost('catbox')" class="bg-zinc-800 hover:bg-zinc-700 py-5 rounded-2xl font-medium">✨GET v1</button>
+
+          <button onclick="uploadToHost('uguu')" class="bg-zinc-800 hover:bg-zinc-700 py-5 rounded-2xl font-medium">✨GET v2</button>
+
+          <button onclick="uploadToHost('cdn')" class="bg-emerald-600 hover:bg-emerald-700 py-5 rounded-2xl font-medium">✨GET v3</button>
+
+        </div>
+
+      </div>
+
+      <!-- Preview Gambar Asli -->
+
+      <div class="glass rounded-3xl p-6 mt-6">
+
+        <h4 class="font-medium mb-4">Preview Gambar Asli</h4>
+
+        <div id="originalPreview" class="bg-zinc-900 rounded-2xl h-80 flex items-center justify-center overflow-hidden border border-zinc-800">
+
+          <p class="text-zinc-500">Belum ada gambar</p>
+
+        </div>
+
+      </div>
+
+      <!-- Hasil Upload (struktur dipertahankan) -->
+
+      <div id="result1" class="hidden mt-6 glass rounded-3xl p-8">
+
+        <div id="uploadLoading" class="hidden text-emerald-400 py-4 text-center">⏳ Mengupload...</div>
+
+        <h3 class="font-semibold text-lg mb-4">✅ Berhasil Diupload!</h3>
+
+        <div id="urlResult1" class="bg-zinc-900 p-5 rounded-2xl break-all font-mono text-sm mb-6"></div>
+
+        <div class="flex gap-4">
+
+          <button onclick="copyLink()" class="flex-1 bg-zinc-700 hover:bg-zinc-600 py-4 rounded-2xl">Copy Link</button>
+
+          <button onclick="openLink()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl">Buka Link</button>
+
+        </div>
+
+        <div id="uploadError" class="hidden text-red-400 py-4 text-center"></div>
+
+      </div>
+
+    </div>
+
+    <!-- HALAMAN 2: NANOBANANA V5 -->
+
+    <div id="page2" class="hidden mt-8">
+
+      <div class="glass rounded-3xl p-10">
+
+        <h2 class="text-2xl font-semibold mb-6">Nimpa Dengan - AI Image Editor</h2>
+
+        <div class="mb-6">
+
+          <label class="block text-sm text-zinc-400 mb-2">URL Gambar</label>
+
+          <input type="text" id="nanoUrl" 
+
+            class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-4 focus:border-emerald-500 outline-none"
+
+            placeholder="Masukkan URL dari Tourl atau link gambar">
+
+        </div>
+
+        <div class="mb-8">
+
+          <label class="block text-sm text-zinc-400 mb-2">Prompt Editing</label>
+
+          <textarea id="nanoPrompt" rows="4"
+
+            class="w-full bg-zinc-900 border border-zinc-700 rounded-3xl px-5 py-4 focus:border-emerald-500 outline-none resize-y"
+
+            placeholder="Ubah bajunya menjadi hitam elegan, tambahkan kacamata..."></textarea>
+
+        </div>
+
+        <button onclick="editWithNano()" 
+
+          class="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 py-6 rounded-3xl font-bold text-lg">
+
+          ✨ Timpa Sekarang
+
+        </button>
+
+      </div>
+
+      <div class="mt-8 glass rounded-3xl p-6">
+
+        <h4 class="font-medium mb-4">Hasil Nimpa</h4>
+
+        <div id="nanoResult" class="bg-zinc-900 rounded-2xl h-96 flex items-center justify-center overflow-hidden border border-zinc-800">
+
+          <p class="text-zinc-500">Hasil nimpa akan muncul di sini</p>
+
+        </div>
+
+        <button onclick="downloadNano()" id="nanoDownloadBtn" 
+
+          class="hidden mt-6 w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-medium">
+
+          Download Hasil Timpa
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    let currentFile = null;
+
+    let tourlUrl = null;
+
+    let nanoResultUrl = null;
+
+    // Tab Switching
+
+    function switchTab(tab) {
+
+      document.getElementById('page1').classList.add('hidden');
+
+      document.getElementById('page2').classList.add('hidden');
+
+      document.getElementById(`page${tab}`).classList.remove('hidden');
+
+      document.getElementById('tab1').classList.remove('tab-active');
+
+      document.getElementById('tab2').classList.remove('tab-active');
+
+      document.getElementById(`tab${tab}`).classList.add('tab-active');
+
+    }
+
+    // === HALAMAN 1: TOURl ===
+
+    const dropZone1 = document.getElementById('dropZone1');
+
+    const fileInput1 = document.getElementById('fileInput1');
+
+    dropZone1.addEventListener('click', () => fileInput1.click());
+
+    fileInput1.addEventListener('change', e => {
+
+      if (e.target.files[0]) handleFile(e.target.files[0]);
+
+    });
+
+    dropZone1.addEventListener('dragover', e => { e.preventDefault(); dropZone1.classList.add('dragover'); });
+
+    dropZone1.addEventListener('dragleave', () => dropZone1.classList.remove('dragover'));
+
+    dropZone1.addEventListener('drop', e => {
+
+      e.preventDefault();
+
+      dropZone1.classList.remove('dragover');
+
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+
+    });
+
+    function handleFile(file) {
+
+      if (!file.type.startsWith('image/')) return alert("Harap pilih file gambar!");
+
+      currentFile = file;
+
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+
+        document.getElementById('originalPreview').innerHTML = 
+
+          `<img src="${e.target.result}" class="max-h-full object-contain">`;
+
+      };
+
+      reader.readAsDataURL(file);
+
+      // Sembunyikan hasil upload sebelumnya
+
+      document.getElementById('result1').classList.add('hidden');
+
+    }
+
+    async function uploadToHost(host) {
+
+      if (!currentFile) return alert("Upload foto terlebih dahulu!");
+
+      const resultDiv = document.getElementById('result1');
+
+      const loadingSpan = document.getElementById('uploadLoading');
+
+      const errorSpan = document.getElementById('uploadError');
+
+      const urlResultSpan = document.getElementById('urlResult1');
+
+      const successTitle = resultDiv.querySelector('h3');
+
+      // Reset tampilan
+
+      errorSpan.classList.add('hidden');
+
+      loadingSpan.classList.remove('hidden');
+
+      urlResultSpan.innerHTML = '';
+
+      successTitle.classList.remove('hidden');
+
+      resultDiv.classList.remove('hidden');
+
+      try {
+
+        const form = new FormData();
+
+        form.append('file', currentFile);
+
+        const res = await fetch(`https://api.ikyyxd.my.id/uploads?host=${host}`, {
+
+          method: 'POST',
+
+          body: form
+
+        });
+
+        const data = await res.json();
+
+        if (data.status) {
+
+          let finalUrl = '';
+
+          if (host === 'catbox') finalUrl = data.result;
+
+          else if (host === 'uguu') finalUrl = data.result?.files?.[0]?.url;
+
+          else if (host === 'cdn') finalUrl = data.result?.url;
+
+          else throw new Error("Host tidak dikenal");
+
+          if (!finalUrl) throw new Error("URL tidak ditemukan dari respons");
+
+          tourlUrl = finalUrl;
+
+          urlResultSpan.innerHTML = tourlUrl;
+
+          loadingSpan.classList.add('hidden');
+
+        } else {
+
+          throw new Error(data.error || "Gagal upload");
+
+        }
+
+      } catch (err) {
+
+        loadingSpan.classList.add('hidden');
+
+        successTitle.classList.add('hidden');
+
+        errorSpan.classList.remove('hidden');
+
+        errorSpan.innerHTML = `❌ Gagal: ${err.message}`;
+
+      }
+
+    }
+
+    function copyLink() {
+
+      if (tourlUrl) {
+
+        navigator.clipboard.writeText(tourlUrl);
+
+        alert("✅ Link berhasil disalin!");
+
+      } else {
+
+        alert("Tidak ada link yang tersedia.");
+
+      }
+
+    }
+
+    function openLink() {
+
+      if (tourlUrl) window.open(tourlUrl, '_blank');
+
+    }
+
+    // === HALAMAN 2: NANOBANANA V5 ===
+
+    async function editWithNano() {
+
+      const url = document.getElementById('nanoUrl').value.trim();
+
+      const prompt = document.getElementById('nanoPrompt').value.trim();
+
+      if (!url) return alert("Masukkan URL gambar terlebih dahulu!");
+
+      if (!prompt) return alert("Masukkan prompt editing!");
+
+      const resultDiv = document.getElementById('nanoResult');
+
+      resultDiv.innerHTML = `<div class="flex flex-col items-center py-20"><i class="fas fa-spinner fa-spin text-6xl text-emerald-400"></i><p class="mt-6">NanoBanana V5 sedang mengedit...</p></div>`;
+
+      document.getElementById('nanoDownloadBtn').classList.add('hidden');
+
+      nanoResultUrl = null;
+
+      try {
+
+        // Perbaikan syntax fetch (tanpa kurung/backtick salah)
+
+        const apiUrl = `https://api.ikyyxd.my.id/edit/nanobananav3?prompt=${encodeURIComponent(prompt)}&url=${encodeURIComponent(url)}`;
+
+        const res = await fetch(apiUrl);
+
+        const data = await res.json();
+
+        if (data.status && data.result?.result_url) {
+
+          nanoResultUrl = data.result.result_url;
+
+          resultDiv.innerHTML = `<img src="${nanoResultUrl}" class="max-h-full object-contain">`;
+
+          document.getElementById('nanoDownloadBtn').classList.remove('hidden');
+
+        } else {
+
+          throw new Error(data.error || "Gagal memproses edit");
+
+        }
+
+      } catch (err) {
+
+        resultDiv.innerHTML = `<p class="text-red-400 text-center p-8">❌ Gagal: ${err.message}</p>`;
+
+      }
+
+    }
+
+    function downloadNano() {
+
+      if (nanoResultUrl) {
+
+        const a = document.createElement('a');
+
+        a.href = nanoResultUrl;
+
+        a.download = `nanobananav5-edit.jpg`;
+
+        a.click();
+
+      } else {
+
+        alert("Tidak ada hasil edit untuk diunduh.");
+
+      }
+
+    }
+
+    // Inisialisasi
+
+    window.onload = () => switchTab(1);
+
+  </script>
+
+</body>
+
+</html>
